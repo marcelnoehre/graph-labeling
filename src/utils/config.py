@@ -2,5 +2,5 @@ from dataclasses import dataclass
 
 @dataclass
 class Config:
+    dev: bool = True
     file: str = 'car'
-    target_height: float = 10.0

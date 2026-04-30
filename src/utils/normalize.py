@@ -3,9 +3,9 @@ import networkx as nx
 from typing import List, Tuple
 from shapely.geometry import Point
 
-from src.utils.config import Config
+from src.utils.constants import TARGET_HEIGHT
 
-def normalize_positions(G: nx.Graph, cfg: Config) -> float:
+def normalize_positions(G: nx.Graph) -> float:
     '''
     Normalize all node 'pos' attributes in-place so that the graph's
     bounding box has a height of *cfg.target_height*, with the aspect ratio
@@ -15,8 +15,6 @@ def normalize_positions(G: nx.Graph, cfg: Config) -> float:
     ----------
     G : nx.Graph
         graph whose nodes have a 'pos' attribute
-    cfg : Config
-        configuration
 
     Returns
     -------
@@ -33,13 +31,13 @@ def normalize_positions(G: nx.Graph, cfg: Config) -> float:
     if height == 0:
         raise ValueError('All nodes have the same y-coordinate!')
 
-    scale = cfg.target_height / height
+    scale = TARGET_HEIGHT / height
 
     for n in G.nodes:
         x, y = G.nodes[n]['pos']
         G.nodes[n]['pos'] = ((x - min_x) * scale, (y - min_y) * scale)
 
-    G.graph['normalized_height'] = cfg.target_height
+    G.graph['normalized_height'] = TARGET_HEIGHT
     G.graph['normalized_width']  = (max_x - min_x) * scale
     G.graph['norm_min_x']        = min_x
     G.graph['norm_min_y']        = min_y
