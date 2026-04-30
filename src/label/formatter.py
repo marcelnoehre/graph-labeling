@@ -37,7 +37,7 @@ def measure_ink_mm(text: str) -> Tuple[float, float]:
     renderer = canvas.get_renderer()
     
     px_per_mm = DPI / 25.4
-    bbox = t.get_window_extent(renderer)
+    bbox = t.get_tightbbox(renderer)
     w_mm = bbox.width / px_per_mm
     h_mm = bbox.height / px_per_mm
     plt.close(fig)

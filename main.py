@@ -7,6 +7,7 @@ from src.utils.normalize import *
 from src.topology.planarize import *
 from src.topology.faces import *
 from src.label.generate_candidates import *
+from src.filter.local import *
 
 def main():
     cfg = Config()
@@ -30,7 +31,6 @@ def main():
     # normalize positions
     scale = normalize_positions(G)
     intersection_points = normalize_intersections(G, intersections)
-
     if cfg.dev:
         plot_graph(
             G, 
@@ -49,7 +49,6 @@ def main():
 
     # faces
     convex_hull, bounded_faces, areas, centroids = extract_faces(G, scale)
-
     if cfg.dev:
         plot_graph(
             G, 
@@ -67,13 +66,24 @@ def main():
         )
 
     label_candidates = generate_label_candidates(G, lattice, cfg)
-
     if cfg.dev:
         plot_graph(
             G, 
             nodes,
             relations,
             output_path="figs/all_label_candidates.pdf",
+            label_candidates=label_candidates,
+            colored_label_candidates=True,
+            show_legend = True
+        )
+
+    label_candidates = restrict_outer_node_candidates(G, label_candidates, convex_hull)
+    if cfg.dev:
+        plot_graph(
+            G, 
+            nodes,
+            relations,
+            output_path="figs/filtered_outer.pdf",
             label_candidates=label_candidates,
             colored_label_candidates=True,
             show_legend = True

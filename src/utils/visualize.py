@@ -106,26 +106,13 @@ def _draw_candidate(
         ))
 
         anchor_pos = candidate.anchor.pos
-        if candidate.anchor.anchor_type == AnchorType.L:
-            anchor_pos[0] - 0.05
-        elif candidate.anchor.anchor_type == AnchorType.R:
-            anchor_pos[0] + 0.05
         ax.scatter(*anchor_pos, color=color, s=30, zorder=10, alpha=0.9, clip_on=False)
 
     text_color = color if colored_label_candidates else 'black'
     cx, cy = candidate.center
-    
-    rows = len(candidate.text.split(r'\\[-1pt]'))
-    translate_x = 0.0
-    if candidate.label_type == LabelType.INTENT:
-        is_left = candidate.anchor.anchor_type in [AnchorType.L, AnchorType.TL, AnchorType.BL]
-        translate_x = -0.025 if is_left else 0.025
-    is_bottom = candidate.anchor.anchor_type in [AnchorType.B, AnchorType.BL, AnchorType.BR]
-    translate_y = 0.025 if (candidate.label_type == LabelType.INTENT and is_bottom) else 0.0
-    translate_y *= rows
 
     return ax.text(
-        cx+translate_x, cy-translate_y, candidate.text,
+        cx, cy, candidate.text,
         ha='center', va='center',
         color=text_color,
         clip_on=False,

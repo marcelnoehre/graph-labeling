@@ -7,9 +7,9 @@ class Config:
     file: str = 'car'
     font_size: str = r'\footnotesize'
     label_config = {
-        LabelType.GENERAL: False,
-        LabelType.EXTENT:  True,
-        LabelType.INTENT:  True
+        LabelType.GENERAL: True,
+        LabelType.EXTENT:  False,
+        LabelType.INTENT:  False
     }
     k_rows: int = 2
     max_row_chars: int = 10
