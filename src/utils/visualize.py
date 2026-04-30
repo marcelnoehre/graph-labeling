@@ -2,27 +2,13 @@ import networkx as nx
 import numpy as np
 import matplotlib
 matplotlib.use('Agg')
+import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 from matplotlib.axes import Axes
 from typing import Dict, List, Tuple
 
 from src.utils.constants import *
-
-def _pos(G: nx.Graph, nid: int, positions: Dict[int, Tuple[float, float]]) -> Tuple[float, float]:
-    '''
-    Derive position of original and dummy nodes.
-    
-    Parameters
-    ----------
-    G : nx.Graph
-        graph containing positions
-    nid : int
-        node to get the position for
-    '''
-    if nid in G.nodes and 'pos' in G.nodes[nid]:
-        return G.nodes[nid]['pos']
-    return positions[nid]
 
 def _trim_figure(fig: Figure, ax: Axes) -> None:
     '''
@@ -90,6 +76,15 @@ def plot_graph(
         # data
         intersections: List[Tuple] = [],
         show_intersections: bool = False,
+        # convex hull
+        convex_hull: List[int] = [],
+        show_convex_hull: bool = False,
+        # faces
+        bounded_faces: List[List[int]] = [],
+        areas: List[float] = [],
+        centroids: List[Tuple[float, float]] = [],
+        show_face_areas: bool = False,
+        show_face_sizes: bool = False
 ) -> None:
     '''
     Draw the graph and save to a PDF.
@@ -103,13 +98,13 @@ def plot_graph(
 
     ##### vertices #####
     for nid in nodes:
-        x, y = _pos(G, nid, positions)
+        x, y = G.nodes[nid]['pos']
         ax.scatter(x, y, facecolor='white', edgecolor='black', linewidth=LINE_WIDTH, s=NODE_SIZE, zorder=100)
 
     ##### edges #####
     for i, j in edges:
-        x0, y0 = _pos(G, i, positions)
-        x1, y1 = _pos(G, j, positions)
+        x0, y0 = G.nodes[i]['pos']
+        x1, y1 = G.nodes[j]['pos']
         ax.plot([x0, x1], [y0, y1], color='black', linewidth=LINE_WIDTH, zorder=2)
 
     ##### intersections #####
@@ -123,6 +118,37 @@ def plot_graph(
                 s=NODE_SIZE, 
                 zorder=10
             )
+
+    ##### convex hull #####
+    if show_convex_hull and convex_hull:
+        pts = [G.nodes[nid]['pos'] for nid in convex_hull]
+        for i in range(len(pts)):
+            p1 = pts[i]
+            p2 = pts[(i + 1) % len(pts)]
+            ax.plot([p1[0], p2[0]], [p1[1], p2[1]], color='tab:red', linestyle='-', linewidth=LINE_WIDTH, zorder=3)
+
+    ##### faces #####
+    if show_face_areas and bounded_faces and areas:
+        norm = plt.Normalize(min(areas), max(areas))
+        for face, area, centroid in zip(bounded_faces, areas, centroids):
+            pts = [G.nodes[nid]['pos'] for nid in face]
+            patch = mpatches.Polygon(
+                pts, closed=True,
+                facecolor=CMAP(norm(area)), edgecolor='none',
+                alpha=0.4, zorder=1,
+            )
+            ax.add_patch(patch)
+            if show_face_sizes:
+                ax.annotate(
+                    f'{area:.2f}', xy=centroid,
+                    ha='center', va='center',
+                    fontsize=9, color='black', zorder=5,
+                )
+        sm = cm.ScalarMappable(cmap=CMAP, norm=plt.Normalize(min(areas), max(areas)))
+        sm.set_array([])
+        cb = plt.colorbar(sm, ax=ax, shrink=0.8)
+        cb.set_label(r'Face area ($\mathrm{mm}^2$)', fontsize=16)
+        cb.ax.tick_params(labelsize=14)
 
     xs = [G.nodes[nid]['pos'][0] for nid in G.nodes]
     ys = [G.nodes[nid]['pos'][1] for nid in G.nodes]

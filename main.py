@@ -3,8 +3,9 @@ from fca.lattice import Lattice
 
 from src.utils.config import Config
 from src.utils.visualize import plot_graph
-from src.topology.planarize import *
 from src.utils.normalize import *
+from src.topology.planarize import *
+from src.topology.faces import *
 
 def main():
     cfg = Config()
@@ -45,6 +46,26 @@ def main():
             output_path="figs/intersections.pdf",
             intersections=intersection_points,
             show_intersections=True
+        )
+
+    # faces
+    convex_hull, bounded_faces, areas, centroids = extract_faces(G, scale)
+
+    if cfg.dev:
+        plot_graph(
+            G, 
+            nodes,
+            relations,
+            positions,
+            output_path="figs/faces.pdf",
+            intersections=intersection_points,
+            show_intersections=True,
+            convex_hull=convex_hull,
+            show_convex_hull=True,
+            bounded_faces=bounded_faces,
+            areas=areas,
+            centroids=centroids,
+            show_face_areas=True
         )
 
 
