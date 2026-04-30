@@ -6,6 +6,7 @@ from src.utils.visualize import plot_graph
 from src.utils.normalize import *
 from src.topology.planarize import *
 from src.topology.faces import *
+from src.label.generate_candidates import *
 
 def main():
     cfg = Config()
@@ -35,14 +36,12 @@ def main():
             G, 
             nodes,
             relations,
-            positions,
             output_path="figs/input.pdf"
         )
         plot_graph(
             G, 
             nodes,
             relations,
-            positions,
             output_path="figs/intersections.pdf",
             intersections=intersection_points,
             show_intersections=True
@@ -56,7 +55,6 @@ def main():
             G, 
             nodes,
             relations,
-            positions,
             output_path="figs/faces.pdf",
             intersections=intersection_points,
             show_intersections=True,
@@ -68,6 +66,18 @@ def main():
             show_face_areas=True
         )
 
+    label_candidates = generate_label_candidates(G, lattice, cfg)
+
+    if cfg.dev:
+        plot_graph(
+            G, 
+            nodes,
+            relations,
+            output_path="figs/all_label_candidates.pdf",
+            label_candidates=label_candidates,
+            colored_label_candidates=True,
+            show_legend = True
+        )
 
 if __name__ == "__main__":
     main()

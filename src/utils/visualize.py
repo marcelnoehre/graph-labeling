@@ -9,6 +9,9 @@ from matplotlib.axes import Axes
 from typing import Dict, List, Tuple
 
 from src.utils.constants import *
+from src.models.anchor import AnchorType
+from src.models.label_type import LabelType
+from src.models.label_candidate import LabelCandidate
 
 def _trim_figure(fig: Figure, ax: Axes) -> None:
     '''
@@ -66,11 +69,74 @@ def _trim_figure(fig: Figure, ax: Axes) -> None:
     fig.set_size_inches(new_w_in, new_h_in)
     ax.set_position([new_ax_l, new_ax_b, new_ax_w, new_ax_h])
 
+def _draw_candidate(
+        ax: Axes,
+        candidate: LabelCandidate,
+        colored_label_candidates: bool = False
+):
+    '''
+    Place the label candidate and visualize its bounding boxes.
+
+    ax : Axes
+        the axes of the figure
+    candidate : LabelCandidate
+        label candidate to be visualized
+    colored_label_candidates : bool
+        wether to draw the bounding boxes
+    '''
+    ibl, ibr, itr, itl = candidate.ink_bbox_corners
+    pbl, pbr, ptr, ptl = candidate.pad_bbox_corners
+    ebl, ebr, etr, etl = candidate.exp_bbox_corners
+
+    if colored_label_candidates:
+        color = candidate.anchor.anchor_type.color
+        ax.add_patch(mpatches.Polygon(
+            [ibl, ibr, itr, itl], closed=True, facecolor='none', edgecolor=color,
+            alpha=0.9, linestyle='-', linewidth=0.8, zorder=4, clip_on=False
+        ))
+        ax.add_patch(mpatches.Polygon(
+            [pbl, pbr, ptr, ptl], closed=True, facecolor=color, edgecolor=color,
+            alpha=0.30, linestyle='-', linewidth=1.6, zorder=3, clip_on=False
+        ))
+        ax.add_patch(mpatches.Polygon(
+            [ebl, ebr, etr, etl], closed=True,
+            facecolor='none', edgecolor=color,
+            alpha=0.55, linestyle=':', linewidth=1.0,
+            zorder=3, clip_on=False
+        ))
+
+        anchor_pos = candidate.anchor.pos
+        if candidate.anchor.anchor_type == AnchorType.L:
+            anchor_pos[0] - 0.05
+        elif candidate.anchor.anchor_type == AnchorType.R:
+            anchor_pos[0] + 0.05
+        ax.scatter(*anchor_pos, color=color, s=30, zorder=10, alpha=0.9, clip_on=False)
+
+    text_color = color if colored_label_candidates else 'black'
+    cx, cy = candidate.center
+    
+    rows = len(candidate.text.split(r'\\[-1pt]'))
+    translate_x = 0.0
+    if candidate.label_type == LabelType.INTENT:
+        is_left = candidate.anchor.anchor_type in [AnchorType.L, AnchorType.TL, AnchorType.BL]
+        translate_x = -0.025 if is_left else 0.025
+    is_bottom = candidate.anchor.anchor_type in [AnchorType.B, AnchorType.BL, AnchorType.BR]
+    translate_y = 0.025 if (candidate.label_type == LabelType.INTENT and is_bottom) else 0.0
+    translate_y *= rows
+
+    return ax.text(
+        cx+translate_x, cy-translate_y, candidate.text,
+        ha='center', va='center',
+        color=text_color,
+        clip_on=False,
+        alpha=1.0,
+        zorder=7,
+    )
+
 def plot_graph(
         G: nx.Graph,
         nodes: List[int],
         edges: List[Tuple[int, int]],
-        positions: Dict[int, Tuple[float, float]],
         output_path: str,
         title: str = '',
         # data
@@ -84,7 +150,11 @@ def plot_graph(
         areas: List[float] = [],
         centroids: List[Tuple[float, float]] = [],
         show_face_areas: bool = False,
-        show_face_sizes: bool = False
+        show_face_sizes: bool = False,
+        # label candidates
+        label_candidates: Dict[int, List[LabelCandidate]] = {},
+        colored_label_candidates: bool = False,
+        show_legend: bool = False
 ) -> None:
     '''
     Draw the graph and save to a PDF.
@@ -149,6 +219,21 @@ def plot_graph(
         cb = plt.colorbar(sm, ax=ax, shrink=0.8)
         cb.set_label(r'Face area ($\mathrm{mm}^2$)', fontsize=16)
         cb.ax.tick_params(labelsize=14)
+
+    ##### label candidates #####
+    if label_candidates:
+        for lid, candidates in label_candidates.items():
+            for candidate in candidates:
+                if candidate.text:
+                    _draw_candidate(ax, candidate, colored_label_candidates)
+
+        if colored_label_candidates:
+            legend_handles = [
+                mpatches.Patch(facecolor=at.color, edgecolor=at.color, alpha=0.6, label=at.plain)
+                for at in list(AnchorType)
+            ]
+            if show_legend:
+                ax.legend(handles=legend_handles, loc='upper left', fontsize=8, title='Label anchor', framealpha=0.8)
 
     xs = [G.nodes[nid]['pos'][0] for nid in G.nodes]
     ys = [G.nodes[nid]['pos'][1] for nid in G.nodes]
