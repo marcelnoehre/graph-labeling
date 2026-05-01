@@ -65,6 +65,7 @@ def main():
             show_face_areas=True
         )
 
+    # initial set of label candidates
     label_candidates = generate_label_candidates(G, lattice, cfg)
     if cfg.dev:
         plot_graph(
@@ -77,6 +78,7 @@ def main():
             show_legend = True
         )
 
+    # filter outer nodes
     label_candidates = restrict_outer_node_candidates(G, label_candidates, convex_hull)
     if cfg.dev:
         plot_graph(
@@ -84,6 +86,19 @@ def main():
             nodes,
             relations,
             output_path="figs/filtered_outer.pdf",
+            label_candidates=label_candidates,
+            colored_label_candidates=True,
+            show_legend = True
+        )
+
+    # filter unclear node assignment
+    label_candidates = filter_candidates_by_nodes(G, label_candidates, nodes)
+    if cfg.dev:
+        plot_graph(
+            G, 
+            nodes,
+            relations,
+            output_path="figs/filter_node.pdf",
             label_candidates=label_candidates,
             colored_label_candidates=True,
             show_legend = True
