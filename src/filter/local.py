@@ -2,10 +2,11 @@ import copy
 import numpy as np
 import networkx as nx
 
-from shapely import Polygon, Point
+from shapely import Polygon, Point, LineString, box
 from typing import Dict, List
 
 from src.models.label_candidate import LabelCandidate
+from src.topology.faces import node_faces
 
 def restrict_outer_node_candidates(
     G: nx.Graph,
@@ -24,6 +25,11 @@ def restrict_outer_node_candidates(
         active label candidates
     convex_hull : List[int],
         boundary walk of the convex hull
+
+    Returns
+    -------
+    filtered_candidates : Dict[int, List[LabelCandidate]]
+        remaining label candidates
     '''
     if not convex_hull:
         return label_candidates
@@ -72,6 +78,11 @@ def filter_candidates_by_nodes(
         active label candidates
     nodes : List[int]
         list of nodes
+
+    Returns
+    -------
+    filtered_candidates : Dict[int, List[LabelCandidate]]
+        remaining label candidates
     '''
     filtered_candidates: Dict[int, List[LabelCandidate]] = {}
 
@@ -93,5 +104,47 @@ def filter_candidates_by_nodes(
                 surviving.append(candidate)
                 
         filtered_candidates[lid] = surviving
+
+    return filtered_candidates
+
+def filter_candidates_by_edges(
+        G: nx.Graph,
+        label_candidates: Dict[int, List[LabelCandidate]],
+        bounded_faces: List[List[int]]
+) -> Dict[int, List[LabelCandidate]]:
+    '''
+    Remove label candidates whose padding bounding box intersects with graph edges.
+
+    Parameters
+    ----------
+    G : nx.Graph
+        graph containing the positions
+    label_candidates : Dict[int, List[LabelCandidate]]
+        active label candidates
+    bounded_faces : List[List[int]]
+        boundary walk of each bounded faces 
+
+    Returns
+    -------
+    filtered_candidates : Dict[int, List[LabelCandidate]]
+        remaining label candidates
+    '''
+    filtered_candidates: Dict[int, List[LabelCandidate]] = {}
+
+    for node, candidates in label_candidates.items():
+        edges = [
+            LineString([G.nodes[u]['pos'], G.nodes[v]['pos']])
+            for u, v in node_faces(node, bounded_faces)
+        ]
+
+        surviving = []
+        for candidate in candidates:
+            ibl, _, itr, _ = candidate.ink_bbox_corners
+            ink_shape = box(ibl[0], ibl[1], itr[0], itr[1])
+            pad_shape = ink_shape.buffer(0.01)
+            if not any(pad_shape.intersects(e) for e in edges):
+                surviving.append(candidate)
+
+        filtered_candidates[node] = surviving
 
     return filtered_candidates

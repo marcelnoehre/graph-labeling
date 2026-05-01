@@ -109,3 +109,37 @@ def extract_faces(G: nx.Graph, scale: float) -> Tuple[List[int], List[List[int]]
     centroids = [_centroid(G, f) for f in bounded_faces]
 
     return convex_hull, bounded_faces, areas, centroids
+
+def node_faces(
+        node: int,
+        bounded_faces: List[List[int]]
+) -> List[Tuple[int, int]]:
+    '''
+    Collect all unique edges from faces that contain the node
+
+    Parameters
+    ----------
+    node : int
+        node for which to find assigned faces
+    bounded_faces: List[List[int]]
+        boundary walk of each bounded face
+    
+    Returns
+    -------
+    face_edges : List
+        a list of (u, v) tuples.
+    '''
+    seen: Set[frozenset] = set()
+    edges = []
+    for face in bounded_faces:
+        if node not in face:
+            continue
+
+        face_edges = {frozenset((face[i], face[(i + 1) % len(face)])) for i in range(len(face))}
+        for e in face_edges:
+            if e not in seen:
+                seen.add(e)
+                u, v = tuple(e)
+                edges.append((u, v))
+
+    return edges
