@@ -116,6 +116,19 @@ def main():
             colored_label_candidates=True,
             show_legend = True
         )
+    
+    # filter by neighbor direction
+    label_candidates = filter_candidates_by_neighbor_direction(G, label_candidates, lattice.lattice)
+    if cfg.dev:
+        plot_graph(
+            G, 
+            nodes,
+            relations,
+            output_path="figs/filtered_neighbor.pdf",
+            label_candidates=label_candidates,
+            colored_label_candidates=True,
+            show_legend = True
+        )
 
 if __name__ == "__main__":
     main()
