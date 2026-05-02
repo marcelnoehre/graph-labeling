@@ -7,7 +7,7 @@ from src.utils.normalize import *
 from src.topology.planarize import *
 from src.topology.faces import *
 from src.label.generate_candidates import *
-from src.filter.local import *
+from src.filter.filter import *
 
 def main():
     cfg = Config()
@@ -87,8 +87,7 @@ def main():
             relations,
             output_path="figs/filtered_outer.pdf",
             label_candidates=label_candidates,
-            colored_label_candidates=True,
-            show_legend = True
+            colored_label_candidates=True
         )
 
     # filter unclear node assignment
@@ -100,8 +99,7 @@ def main():
             relations,
             output_path="figs/filter_node.pdf",
             label_candidates=label_candidates,
-            colored_label_candidates=True,
-            show_legend = True
+            colored_label_candidates=True
         )
 
     # filter overlapping edges
@@ -113,8 +111,7 @@ def main():
             relations,
             output_path="figs/filter_edges.pdf",
             label_candidates=label_candidates,
-            colored_label_candidates=True,
-            show_legend = True
+            colored_label_candidates=True
         )
     
     # filter by neighbor direction
@@ -126,8 +123,19 @@ def main():
             relations,
             output_path="figs/filtered_neighbor.pdf",
             label_candidates=label_candidates,
-            colored_label_candidates=True,
-            show_legend = True
+            colored_label_candidates=True
+        )
+
+    # filter by hybrid algorithm
+    label_candidates = filter_hyrid(label_candidates)
+    if cfg.dev:
+        plot_graph(
+            G, 
+            nodes,
+            relations,
+            output_path="figs/filtered_hybrid.pdf",
+            label_candidates=label_candidates,
+            colored_label_candidates=True
         )
 
 if __name__ == "__main__":

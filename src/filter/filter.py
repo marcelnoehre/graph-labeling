@@ -9,6 +9,8 @@ from fcapy.lattice import ConceptLattice
 from src.models.anchor import AnchorType
 from src.models.label_candidate import LabelCandidate
 from src.topology.faces import node_faces
+from src.filter.rules import *
+from src.filter.matching import *
 
 def restrict_outer_node_candidates(
     G: nx.Graph,
@@ -216,4 +218,59 @@ def filter_candidates_by_neighbor_direction(
                 if c.anchor.anchor_type not in filtered
             ]
     
+    return filtered_candidates
+
+def filter_hyrid(label_candidates: Dict[int, List[LabelCandidate]]) -> Dict[int, List[LabelCandidate]]:
+    '''
+    Modified Hybrid algorithm with a readability tie breaker Preserves alternatives.
+    Candidates of the same feature are allowed to overlap each other, 
+    but will still block candidates from DIFFERENT features.
+
+    Parameters
+    ----------
+    label_candidates : Dict[int, List[LabelCandidate]]
+        active label candidates
+
+    Returns
+    -------
+    filtered_candidates : Dict[int, List[LabelCandidate]]
+        remaining label candidates
+    '''
+    conflicts = build_conflict_map(label_candidates)
+    while True:
+        label_candidates, changed_L1 = apply_L1(label_candidates, conflicts)
+        label_candidates, changed_L2 = apply_L2(label_candidates, conflicts)
+        label_candidates, changed_L3 = apply_L3(label_candidates, conflicts)
+        if not changed_L1 and not changed_L2 and not changed_L3:
+            break
+
+    unresolved = {
+        lid: cands
+        for lid, cands in label_candidates.items()
+        if len(cands) > 1
+    }
+    chosen: Dict[int, LabelCandidate] = {
+        lid: cands[0]
+        for lid, cands in label_candidates.items()
+        if len(cands) == 1
+    }
+
+    if unresolved:
+        components = connected_components(unresolved, conflicts)
+        for comp in components:
+            cliques = kt_reduce(comp, conflicts)
+            if not cliques:
+                continue
+            match = maximum_bipartite_matching(list(comp.keys()), cliques)
+            chosen.update(match)
+
+    placed_entries: List[Tuple[int, LabelCandidate]] = []
+    filtered_candidates: Dict[int, List[LabelCandidate]] = {lid: [] for lid in label_candidates}
+    for lid in sorted(filtered_candidates.keys(), key=lambda lid: chosen[lid].anchor.anchor_type.rank if lid in chosen else float('inf')):
+        for cand in sorted(label_candidates[lid], key=lambda c: c.anchor.anchor_type.rank):
+            if not any(p_lid != lid and pad_overlap(cand, p_cand) for p_cand, p_lid in placed_entries):
+                filtered_candidates[lid].append(cand)
+                placed_entries.append((cand, lid))
+                break
+
     return filtered_candidates

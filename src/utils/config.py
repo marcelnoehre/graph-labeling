@@ -4,7 +4,7 @@ from src.models.label_type import LabelType
 @dataclass
 class Config:
     dev: bool = True
-    file: str = 'car'
+    file: str = 'living_beings_and_water'
     font_size: str = r'\footnotesize'
     label_config = {
         LabelType.GENERAL: True,
