@@ -14,6 +14,7 @@ class AnchorType(Enum):
     R = (6, 'R', 'tab:grey')
     TR = (7, 'TR', 'tab:blue')
     BR = (8, 'BR', 'tab:orange')
+    O = (9, 'Overflow', 'tab:cyan')
 
     @property
     def rank(self) -> int:
@@ -44,7 +45,7 @@ class Anchor:
     anchor_type: AnchorType
     pos: Tuple[float, float]
 
-    def __init__(self, anchor_type: AnchorType, pbl: float, pbr: float, ptr: float, ptl: float):
+    def __init__(self, anchor_type: AnchorType, cx: float, cy: float, pbl: float, pbr: float, ptr: float, ptl: float):
         self.anchor_type = anchor_type
         self.pos = {
             AnchorType.T: ((ptl[0] + ptr[0]) / 2, ptl[1]),
@@ -54,5 +55,6 @@ class Anchor:
             AnchorType.TL: ptl,
             AnchorType.TR: ptr,
             AnchorType.BL: pbl,
-            AnchorType.BR: pbr
+            AnchorType.BR: pbr,
+            AnchorType.O: (cx, cy)
         }[anchor_type]

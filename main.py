@@ -1,3 +1,5 @@
+import copy
+
 from data.parser import Parser
 from fca.lattice import Lattice
 
@@ -8,6 +10,7 @@ from src.topology.planarize import *
 from src.topology.faces import *
 from src.label.generate_candidates import *
 from src.filter.filter import *
+from src.label.generate_overflow import *
 
 def main():
     cfg = Config()
@@ -67,6 +70,7 @@ def main():
 
     # initial set of label candidates
     label_candidates = generate_label_candidates(G, lattice, cfg)
+    initial_candidates = copy.deepcopy(label_candidates)
     if cfg.dev:
         plot_graph(
             G, 
@@ -136,6 +140,18 @@ def main():
             output_path="figs/filtered_hybrid.pdf",
             label_candidates=label_candidates,
             colored_label_candidates=True
+        )
+
+    overflow_candidates = generate_overflow_candidates(G, label_candidates, initial_candidates)
+    if cfg.dev:
+        plot_graph(
+            G, 
+            nodes,
+            relations,
+            output_path="figs/all_overflow_candidates.pdf",
+            label_candidates=label_candidates,
+            colored_label_candidates=True,
+            overflow_candidates=overflow_candidates
         )
 
 if __name__ == "__main__":

@@ -20,3 +20,30 @@ def pad_overlap(a: LabelCandidate, b: LabelCandidate) -> bool:
     (bx0, by0), _, (bx1, by1), _ = b.pad_bbox_corners
     
     return ax0 < bx1 and ax1 > bx0 and ay0 < by1 and ay1 > by0
+
+def bbox_corners(cx, cy, hx, hy):
+    '''
+    Derive the corner positions based on the center and the half-size
+    
+    Parameters
+    ----------
+    cx : float
+        x-coordinate of the center
+    cy : float
+        y-coordinate of the center
+    hx : float
+        half-width
+    hy : float
+        half-height
+
+    Returns
+    -------
+    bbox_corners : Tuple[Tuple[float, float], Tuple[float, float], Tuple[float, float], Tuple[float, float]]
+        bbox corners based on the center and half-size
+    '''
+    return (
+        (cx - hx, cy - hy), # BL
+        (cx + hx, cy - hy), # BR
+        (cx + hx, cy + hy), # TR
+        (cx - hx, cy + hy), # TL
+    )

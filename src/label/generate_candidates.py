@@ -1,7 +1,7 @@
 import numpy as np
 import networkx as nx
 
-from typing import List
+from typing import List, Dict
 from fca import Lattice
 
 from src.utils.config import Config
@@ -113,7 +113,7 @@ def _compute_label_candidates(
 
         lid_candidates.append(LabelCandidate(
             node_id=node_id,
-            anchor=Anchor(anchor, pbl, pbr, ptr, ptl),
+            anchor=Anchor(anchor, cx, cy, pbl, pbr, ptr, ptl),
             label_type=label_type,
             ink_bbox_corners=(ibl, ibr, itr, itl),
             pad_bbox_corners=(pbl, pbr, ptr, ptl),
@@ -124,7 +124,7 @@ def _compute_label_candidates(
 
     return lid_candidates
 
-def generate_label_candidates(G: nx.Graph, lattice: Lattice, cfg: Config):
+def generate_label_candidates(G: nx.Graph, lattice: Lattice, cfg: Config) -> Dict[int, List[LabelCandidate]]:
     '''
     Generate all label candidates.
 
@@ -136,6 +136,11 @@ def generate_label_candidates(G: nx.Graph, lattice: Lattice, cfg: Config):
         lattice functionalities for FCA version
     cfg : Config
         configuration
+
+    Returns
+    -------
+    label_candidates : Dict[int, List[LabelCandidate]]
+        initial set of label candidates
     '''
     label_candidates = {}
     lid = 0

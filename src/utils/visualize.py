@@ -84,22 +84,18 @@ def _draw_candidate(
     colored_label_candidates : bool
         wether to draw the bounding boxes
     '''
-    ibl, ibr, itr, itl = candidate.ink_bbox_corners
-    pbl, pbr, ptr, ptl = candidate.pad_bbox_corners
-    ebl, ebr, etr, etl = candidate.exp_bbox_corners
-
     if colored_label_candidates:
         color = candidate.anchor.anchor_type.color
         ax.add_patch(mpatches.Polygon(
-            [ibl, ibr, itr, itl], closed=True, facecolor='none', edgecolor=color,
+            candidate.ink_bbox_corners, closed=True, facecolor='none', edgecolor=color,
             alpha=0.9, linestyle='-', linewidth=0.8, zorder=4, clip_on=False
         ))
         ax.add_patch(mpatches.Polygon(
-            [pbl, pbr, ptr, ptl], closed=True, facecolor=color, edgecolor=color,
+            candidate.pad_bbox_corners, closed=True, facecolor=color, edgecolor=color,
             alpha=0.30, linestyle='-', linewidth=1.6, zorder=3, clip_on=False
         ))
         ax.add_patch(mpatches.Polygon(
-            [ebl, ebr, etr, etl], closed=True,
+            candidate.exp_bbox_corners, closed=True,
             facecolor='none', edgecolor=color,
             alpha=0.55, linestyle=':', linewidth=1.0,
             zorder=3, clip_on=False
@@ -111,7 +107,72 @@ def _draw_candidate(
     text_color = color if colored_label_candidates else 'black'
     cx, cy = candidate.center
 
-    return ax.text(
+    ax.text(
+        cx, cy, candidate.text,
+        ha='center', va='center',
+        color=text_color,
+        clip_on=False,
+        alpha=1.0,
+        zorder=7,
+    )
+
+def _draw_overflow_candidate(
+        G: nx.Graph,
+        ax: Axes,
+        candidate: LabelCandidate,
+        colored_label_candidates: bool = False
+):
+    '''
+    Place the overflow candidate and visualize its bounding boxes.
+
+    G : nx.Graph
+        graph containing positions
+    ax : Axes
+        the axes of the figure
+    candidate : LabelCandidate
+        overflow candidate to be visualized
+    colored_label_candidates : bool
+        wether to draw the bounding boxes
+    '''
+    if colored_label_candidates:
+        color = candidate.anchor.anchor_type.color
+        ax.add_patch(mpatches.Polygon(
+            candidate.ink_bbox_corners, closed=True,
+            facecolor='none', edgecolor=color,
+            alpha=0.9, linestyle='-', linewidth=0.8,
+            zorder=4, clip_on=False
+        ))
+        ax.add_patch(mpatches.Polygon(
+            candidate.pad_bbox_corners, closed=True,
+            facecolor=color, edgecolor=color,
+            alpha=0.30, linestyle='-', linewidth=1.6,
+            zorder=3, clip_on=False
+        ))
+
+        ax.scatter(*candidate.anchor.pos, color=color, s=30, zorder=6, alpha=0.9, clip_on=False)
+
+        ax.add_patch(mpatches.Polygon(
+            candidate.exp_bbox_corners, closed=True,
+            facecolor='none', edgecolor=color,
+            alpha=0.55, linestyle=':', linewidth=1.0,
+            zorder=3, clip_on=False
+        ))
+
+    if candidate.anchor.anchor_type != AnchorType.O:
+        ax.scatter(*candidate.anchor.pos, color='grey', s=5, zorder=6, alpha=0.8, clip_on=False)
+        nx_, ny = G.nodes[candidate.node_id]['pos']
+        ax.plot(
+            [candidate.anchor.pos[0], nx_], 
+            [candidate.anchor.pos[1], ny], 
+            color='grey', linestyle='--', 
+            linewidth=0.5, alpha=0.4, 
+            zorder=4, clip_on=False
+        )
+
+    text_color = color if colored_label_candidates else 'black'
+    cx, cy = candidate.center
+
+    ax.text(
         cx, cy, candidate.text,
         ha='center', va='center',
         color=text_color,
@@ -141,7 +202,9 @@ def plot_graph(
         # label candidates
         label_candidates: Dict[int, List[LabelCandidate]] = {},
         colored_label_candidates: bool = False,
-        show_legend: bool = False
+        show_legend: bool = False,
+        # overflow candidates
+        overflow_candidates: Dict[int, LabelCandidate] = {}
 ) -> None:
     '''
     Draw the graph and save to a PDF.
@@ -209,7 +272,7 @@ def plot_graph(
 
     ##### label candidates #####
     if label_candidates:
-        for lid, candidates in label_candidates.items():
+        for candidates in label_candidates.values():
             for candidate in candidates:
                 if candidate.text:
                     _draw_candidate(ax, candidate, colored_label_candidates)
@@ -221,6 +284,10 @@ def plot_graph(
             ]
             if show_legend:
                 ax.legend(handles=legend_handles, loc='upper left', fontsize=8, title='Label anchor', framealpha=0.8)
+    
+    if overflow_candidates:
+        for overflow_candidate in overflow_candidates.values():
+            _draw_overflow_candidate(G, ax, overflow_candidate, colored_label_candidates)
 
     xs = [G.nodes[nid]['pos'][0] for nid in G.nodes]
     ys = [G.nodes[nid]['pos'][1] for nid in G.nodes]
