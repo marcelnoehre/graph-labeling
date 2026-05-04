@@ -11,6 +11,97 @@ from src.utils.geometry import *
 from src.overflow.grid import *
 from src.overflow.hungarian import *
 
+def _adjust_anchors(
+        G: nx.Graph, 
+        label_candidates: Dict[int, List[LabelCandidate]], 
+        overflow_candidates: Dict[int, LabelCandidate], 
+        unbounded_overflow_labels: List[int],
+        alpha_polygon: Polygon
+    ) -> Dict[int, LabelCandidate]:
+    '''
+    Translate label to improve anchoring.
+
+    Parameters
+    ----------
+    G : nx.Graph
+        graph containing positions
+    label_candidates: Dict[int, List[LabelCandidate]], 
+        already placed candidates
+    overflow_candidates: Dict[int, LabelCandidate], 
+        placed overflow candidates
+    unbounded_ooverflow_candidatesverflow_labels: List[int],
+        overflow labels that are placed in the graph's exterior
+    alpha_polygon: Polygon
+        polygon of the drawing
+
+    Returns
+    -------
+    overflow_candidates: Dict[int, LabelCandidate]
+        refined overflow candidates
+    '''
+    sorted_unbounded_overflow_labels = sorted(
+        unbounded_overflow_labels, 
+        key=lambda lid: Point(overflow_candidates[lid].anchor.pos).distance(alpha_polygon)
+    )
+
+    for lid in sorted_unbounded_overflow_labels:
+        ol = overflow_candidates[lid]
+        cx, cy = ol.center
+        anchor_candidates = [
+            Anchor(at, *ol.center, *ol.pad_bbox_corners)
+            for at in AnchorType if at != AnchorType.O
+        ]
+
+        label_center = np.array([cx, cy])
+        node_pos = G.nodes[ol.node_id]['pos']
+        node_pt = np.array(node_pos)
+        vec = node_pt - label_center
+        dist_to_node = np.linalg.norm(vec)
+        unit = vec / dist_to_node if dist_to_node > 0 else vec
+        scored_anchors: List[Tuple[float, Anchor]] = []
+        for anchor in anchor_candidates:
+            va = np.array(anchor.pos) - label_center
+            na = np.linalg.norm(va)
+            align = float(np.dot(unit, va / na)) if na > 0 else -1.0
+            scored_anchors.append((align, anchor))
+
+        scored_anchors.sort(reverse=True)
+
+        for _, anchor in scored_anchors:
+            if ol.anchor.anchor_type == anchor.anchor_type:
+                break
+
+            anchor_offset_from_center = np.array(anchor.pos) - label_center
+            fixed_anchor_pos = np.array(ol.anchor.pos)
+            new_center = fixed_anchor_pos - anchor_offset_from_center
+
+
+            tmp_ol = copy.deepcopy(ol)
+            tmp_ol.update_position(*new_center, ol.anchor)
+
+            tmp_pad_poly = Polygon(tmp_ol.pad_bbox_corners)
+            tmp_exp_poly = Polygon(tmp_ol.exp_bbox_corners)
+
+            if tmp_exp_poly.intersects(alpha_polygon):
+                return False # overlaps graph
+
+            if any(tmp_exp_poly.intersects(Polygon(l[0].pad_bbox_corners)) for l in label_candidates.values() if l):
+                continue # overlaps with existing label
+    
+            if any(tmp_exp_poly.intersects(Polygon(oc.exp_bbox_corners)) for oc in overflow_candidates.values() if oc.node_id != tmp_ol.node_id):
+                continue # overlaps another overflow label
+ 
+            if any(
+                tmp_pad_poly.intersects(LineString([G.nodes[oc.node_id]['pos'], oc.anchor.pos])) 
+                for oc in overflow_candidates.values() if oc.node_id != tmp_ol.node_id
+            ):
+                continue # overlaps with a binder of another overflow label
+
+            overflow_candidates[lid] = tmp_ol
+            break
+
+    return overflow_candidates
+
 def unbounded_overflow_labels(
         G: nx.Graph,
         label_candidates: Dict[int, List[LabelCandidate]],
@@ -91,4 +182,4 @@ def unbounded_overflow_labels(
     for lid, chosen in assignment.items():
         overflow_candidates[lid] = chosen[0]
 
-    return grid_candidates, overflow_candidates
+    return grid_candidates, _adjust_anchors(G, label_candidates, overflow_candidates, unplaced_overflow.keys(), alpha_polygon)
