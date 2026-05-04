@@ -7,7 +7,7 @@ class LabelType(Enum):
     '''
     (LaTeX, anchors)
     '''
-    GENERAL = (r'\textrm', list(AnchorType))
+    GENERAL = (r'\textrm', [at for at in AnchorType if at != AnchorType.O])
     EXTENT = (r'\textrm', [AnchorType.T, AnchorType.TL, AnchorType.TR])
     INTENT = (r'\textit', [AnchorType.BL, AnchorType.B, AnchorType.BR])
 

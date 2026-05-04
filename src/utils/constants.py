@@ -5,6 +5,7 @@ import matplotlib.cm as cm
 TARGET_HEIGHT: float = 10.0
 PHYSICAL_HEIGHT_MM: float = 100.0
 NODE_SIZE: float = 50.0
+NODE_RADIUS: float = 0.2
 LINE_WIDTH: float = 1.0
 CMAP = cm.YlOrRd
 DPI: float = 150.0

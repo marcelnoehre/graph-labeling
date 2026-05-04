@@ -280,7 +280,7 @@ def plot_graph(
         if colored_label_candidates:
             legend_handles = [
                 mpatches.Patch(facecolor=at.color, edgecolor=at.color, alpha=0.6, label=at.plain)
-                for at in list(AnchorType)
+                for at in AnchorType if at != AnchorType.O
             ]
             if show_legend:
                 ax.legend(handles=legend_handles, loc='upper left', fontsize=8, title='Label anchor', framealpha=0.8)

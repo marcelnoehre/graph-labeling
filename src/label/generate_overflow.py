@@ -38,8 +38,8 @@ def _compute_overflow_candidate(G: nx.Graph, initial_candidate: LabelCandidate) 
 
     half_iw = ink_w / 2.0
     half_ih = ink_h / 2.0
-    half_pw  = (ink_w + 2 * padding) / 2.0
-    half_ph  = (ink_h + 2 * padding) / 2.0
+    half_pw  = (ink_w + 2 * padding / 3) / 2.0
+    half_ph  = (ink_h + 2 * padding / 3) / 2.0
     half_ew = (ink_w + 2 * padding * s) / 2.0
     half_eh = (ink_h + 2 * padding * s) / 2.0
     

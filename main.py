@@ -11,6 +11,7 @@ from src.topology.faces import *
 from src.label.generate_candidates import *
 from src.filter.filter import *
 from src.label.generate_overflow import *
+from src.overflow.bounded import *
 
 def main():
     cfg = Config()
@@ -39,13 +40,13 @@ def main():
             G, 
             nodes,
             relations,
-            output_path="figs/input.pdf"
+            output_path='figs/input.pdf'
         )
         plot_graph(
             G, 
             nodes,
             relations,
-            output_path="figs/intersections.pdf",
+            output_path='figs/intersections.pdf',
             intersections=intersection_points,
             show_intersections=True
         )
@@ -57,7 +58,7 @@ def main():
             G, 
             nodes,
             relations,
-            output_path="figs/faces.pdf",
+            output_path='figs/faces.pdf',
             intersections=intersection_points,
             show_intersections=True,
             convex_hull=convex_hull,
@@ -76,7 +77,7 @@ def main():
             G, 
             nodes,
             relations,
-            output_path="figs/all_label_candidates.pdf",
+            output_path='figs/all_label_candidates.pdf',
             label_candidates=label_candidates,
             colored_label_candidates=True,
             show_legend = True
@@ -89,7 +90,7 @@ def main():
             G, 
             nodes,
             relations,
-            output_path="figs/filtered_outer.pdf",
+            output_path='figs/filtered_outer.pdf',
             label_candidates=label_candidates,
             colored_label_candidates=True
         )
@@ -101,7 +102,7 @@ def main():
             G, 
             nodes,
             relations,
-            output_path="figs/filter_node.pdf",
+            output_path='figs/filter_node.pdf',
             label_candidates=label_candidates,
             colored_label_candidates=True
         )
@@ -113,7 +114,7 @@ def main():
             G, 
             nodes,
             relations,
-            output_path="figs/filter_edges.pdf",
+            output_path='figs/filter_edges.pdf',
             label_candidates=label_candidates,
             colored_label_candidates=True
         )
@@ -125,7 +126,7 @@ def main():
             G, 
             nodes,
             relations,
-            output_path="figs/filtered_neighbor.pdf",
+            output_path='figs/filtered_neighbor.pdf',
             label_candidates=label_candidates,
             colored_label_candidates=True
         )
@@ -137,7 +138,7 @@ def main():
             G, 
             nodes,
             relations,
-            output_path="figs/filtered_hybrid.pdf",
+            output_path='figs/filtered_hybrid.pdf',
             label_candidates=label_candidates,
             colored_label_candidates=True
         )
@@ -148,11 +149,32 @@ def main():
             G, 
             nodes,
             relations,
-            output_path="figs/all_overflow_candidates.pdf",
+            output_path='figs/all_overflow_candidates.pdf',
             label_candidates=label_candidates,
             colored_label_candidates=True,
             overflow_candidates=overflow_candidates
         )
 
-if __name__ == "__main__":
+    overflow_candidates = bounded_overflow_labels(G, label_candidates, overflow_candidates, bounded_faces, centroids)
+    if cfg.dev:
+        plot_graph(
+            G, 
+            nodes,
+            relations,
+            output_path='figs/bounded_overflow_candidates.pdf',
+            label_candidates=label_candidates,
+            colored_label_candidates=True,
+            overflow_candidates=overflow_candidates
+        )
+
+    plot_graph(
+        G, 
+        nodes,
+        relations,
+        output_path=f'figs/{cfg.file}.pdf',
+        label_candidates=label_candidates,
+        overflow_candidates=overflow_candidates
+    )
+
+if __name__ == '__main__':
     main()
