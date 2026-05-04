@@ -180,6 +180,15 @@ def main():
             overflow_candidates=overflow_candidates,
             grid_candidates=grid_candidates
         )
+        plot_graph(
+            G, 
+            nodes,
+            relations,
+            output_path='figs/unbounded_overflow_candidates.pdf',
+            label_candidates=label_candidates,
+            colored_label_candidates=True,
+            overflow_candidates=overflow_candidates
+        )
 
     plot_graph(
         G, 

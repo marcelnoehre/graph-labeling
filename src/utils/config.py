@@ -6,7 +6,7 @@ class Config:
     # dev mode
     dev: bool = True
     # data
-    file: str = 'living_beings_and_water'    
+    file: str = 'convex-ordinal'    
     label_config = {
         LabelType.GENERAL: True,
         LabelType.EXTENT:  False,
@@ -33,4 +33,7 @@ class Config:
     w_padding: float = 5.0              # penalty for padding
     w_miss: float = 1e6                 # penalty for unplaced label
     w_type: float = 100.0               # penalty for labels in the wrong half space
-
+    # hungarian solver
+    max_hungarian_iterations: int = 50
+    max_hungarian_fixes: int = 3
+    iter_penalty_multiplier: float = 2.0

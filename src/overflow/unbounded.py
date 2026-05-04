@@ -9,6 +9,7 @@ from src.models.label_candidate import LabelCandidate
 from src.models.anchor import AnchorType
 from src.utils.geometry import *
 from src.overflow.grid import *
+from src.overflow.hungarian import *
 
 def unbounded_overflow_labels(
         G: nx.Graph,
@@ -85,5 +86,9 @@ def unbounded_overflow_labels(
         best_gap['assigned'].append(ol.node_id)
 
     grid_candidates = grid_overflow_candidates(G, label_candidates, overflow_candidates, gaps, centroid, alpha_polygon, placed_union, placed_overflow, cfg)
+
+    assignment = hungarian_solver(G, sorted(grid_candidates.keys()), grid_candidates, cfg)
+    for lid, chosen in assignment.items():
+        overflow_candidates[lid] = chosen[0]
 
     return grid_candidates, overflow_candidates
