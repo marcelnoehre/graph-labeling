@@ -13,6 +13,7 @@ from src.filter.filter import *
 from src.label.generate_overflow import *
 from src.overflow.bounded import *
 from src.overflow.unbounded import *
+from src.forces.forces import *
 
 def main():
     cfg = Config()
@@ -168,6 +169,7 @@ def main():
             overflow_candidates=overflow_candidates
         )
 
+    unbounded: List[int] = [lid for lid, ol in overflow_candidates.items() if ol.anchor.anchor_type == AnchorType.O]
     grid_candidates, overflow_candidates = unbounded_overflow_labels(G, label_candidates, overflow_candidates, alpha_shape, cfg)
     if cfg.dev:
         plot_graph(
@@ -185,6 +187,18 @@ def main():
             nodes,
             relations,
             output_path='figs/unbounded_overflow_candidates.pdf',
+            label_candidates=label_candidates,
+            colored_label_candidates=True,
+            overflow_candidates=overflow_candidates
+        )
+
+    overflow_candidates = optimize_overflow_labels(G, label_candidates, overflow_candidates, unbounded, alpha_shape, cfg)
+    if cfg.dev:
+        plot_graph(
+            G, 
+            nodes,
+            relations,
+            output_path='figs/force_refined.pdf',
             label_candidates=label_candidates,
             colored_label_candidates=True,
             overflow_candidates=overflow_candidates

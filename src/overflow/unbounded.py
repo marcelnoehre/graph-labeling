@@ -74,10 +74,12 @@ def _adjust_anchors(
             anchor_offset_from_center = np.array(anchor.pos) - label_center
             fixed_anchor_pos = np.array(ol.anchor.pos)
             new_center = fixed_anchor_pos - anchor_offset_from_center
-
+            pw, ph = label_wh(ol.pad_bbox_corners)
+            new_corners = bbox_corners(*new_center, pw/2, ph/2)
+            new_anchor = Anchor(anchor.anchor_type, *ol.anchor.pos, *new_corners)
 
             tmp_ol = copy.deepcopy(ol)
-            tmp_ol.update_position(*new_center, ol.anchor)
+            tmp_ol.update_position(*new_center, new_anchor)
 
             tmp_pad_poly = Polygon(tmp_ol.pad_bbox_corners)
             tmp_exp_poly = Polygon(tmp_ol.exp_bbox_corners)

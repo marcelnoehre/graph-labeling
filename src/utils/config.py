@@ -37,3 +37,13 @@ class Config:
     max_hungarian_iterations: int = 50
     max_hungarian_fixes: int = 3
     iter_penalty_multiplier: float = 2.0
+    # weights (forces)
+    w_inner_proximity: float = 5.0      # push away from internal drawing
+    w_global_proximity: float = 5.0     # push away from other overflow labels
+    w_spring: float = 1.0               # pull toward node
+    w_binder_dodge: float = 5.0         # push binder away from fixed labels
+    w_half_plane: float = 5.0           # keep labels in the correct half plane
+    # force refinement
+    force_iterations: int = 10000
+    force_step_size: float = 0.1
+    min_binder_length: float = 0.25
