@@ -52,7 +52,7 @@ def main():
         )
 
     # faces
-    convex_hull, bounded_faces, areas, centroids = extract_faces(G, scale)
+    alpha_shape, bounded_faces, areas, centroids = extract_faces(G, scale)
     if cfg.dev:
         plot_graph(
             G, 
@@ -61,8 +61,8 @@ def main():
             output_path='figs/faces.pdf',
             intersections=intersection_points,
             show_intersections=True,
-            convex_hull=convex_hull,
-            show_convex_hull=True,
+            alpha_shape=alpha_shape,
+            show_alpha_shape=True,
             bounded_faces=bounded_faces,
             areas=areas,
             centroids=centroids,
@@ -84,7 +84,7 @@ def main():
         )
 
     # filter outer nodes
-    label_candidates = restrict_outer_node_candidates(G, label_candidates, convex_hull)
+    label_candidates = restrict_outer_node_candidates(G, label_candidates, alpha_shape)
     if cfg.dev:
         plot_graph(
             G, 

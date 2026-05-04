@@ -1,9 +1,10 @@
+import alphashape
 import numpy as np
 import networkx as nx
 
 from typing import List, Tuple, Set
 from shapely.geometry import Polygon
-from scipy.spatial import ConvexHull
+from scipy.spatial import KDTree
 
 def _shoelace(G: nx.Graph, nodes: List[int], scale: float) -> float:
     '''
@@ -64,8 +65,8 @@ def extract_faces(G: nx.Graph, scale: float) -> Tuple[List[int], List[List[int]]
 
     Returns
     -------
-    convex_hull : List[int]
-        convex hull of the graph
+    alpha_shape : List[int]
+        alpha shape containing the graph
     bounded_faces : Tuple[List[List[int]]
         list of bounded faces
     areas : List[float]
@@ -98,8 +99,11 @@ def extract_faces(G: nx.Graph, scale: float) -> Tuple[List[int], List[List[int]]
                 seen.add(key)
                 faces.append(face)
     
-    hull = ConvexHull(points)
-    convex_hull = [planar_nodes[i] for i in hull.vertices]
+    hull_poly = alphashape.alphashape(points, 0.1)
+    boundary_coords = np.array(hull_poly.exterior.coords)[:-1]
+    tree = KDTree(points)
+    _, indices = tree.query(boundary_coords)
+    alpha_shape = [planar_nodes[i] for i in indices]
 
     face_areas = [(f, _shoelace(G, f, scale)) for f in faces]
     outer_face = max(face_areas, key=lambda x: x[1])[0]
@@ -108,7 +112,7 @@ def extract_faces(G: nx.Graph, scale: float) -> Tuple[List[int], List[List[int]]
     areas = [a for _, a in bounded]
     centroids = [_centroid(G, f) for f in bounded_faces]
 
-    return convex_hull, bounded_faces, areas, centroids
+    return alpha_shape, bounded_faces, areas, centroids
 
 def node_faces(
         node: int,

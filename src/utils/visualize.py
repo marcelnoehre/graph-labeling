@@ -190,9 +190,9 @@ def plot_graph(
         # data
         intersections: List[Tuple] = [],
         show_intersections: bool = False,
-        # convex hull
-        convex_hull: List[int] = [],
-        show_convex_hull: bool = False,
+        # alpha shape
+        alpha_shape: List[int] = [],
+        show_alpha_shape: bool = False,
         # faces
         bounded_faces: List[List[int]] = [],
         areas: List[float] = [],
@@ -239,9 +239,9 @@ def plot_graph(
                 zorder=10
             )
 
-    ##### convex hull #####
-    if show_convex_hull and convex_hull:
-        pts = [G.nodes[nid]['pos'] for nid in convex_hull]
+    ##### alpha_shape #####
+    if show_alpha_shape and alpha_shape:
+        pts = [G.nodes[nid]['pos'] for nid in alpha_shape]
         for i in range(len(pts)):
             p1 = pts[i]
             p2 = pts[(i + 1) % len(pts)]

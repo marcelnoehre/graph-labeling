@@ -15,11 +15,11 @@ from src.filter.matching import *
 def restrict_outer_node_candidates(
     G: nx.Graph,
     label_candidates: Dict[int, List[LabelCandidate]],
-    convex_hull: List[int],
+    alpha_shape: List[int],
 ) -> Dict[int, List[LabelCandidate]]:
     '''
-    Restrict the label candidates for nodes on the boundary of the convex hull
-    to candidates whose ink_bbox does not intersect with the convex hull.
+    Restrict the label candidates for nodes on the boundary of the alpha shape
+    to candidates whose ink_bbox does not intersect with the alpha shape.
 
     Parameters
     ----------
@@ -27,18 +27,18 @@ def restrict_outer_node_candidates(
         graph containing the positions
     label_candidates : Dict[int, List[LabelCandidate]]
         active label candidates
-    convex_hull : List[int],
-        boundary walk of the convex hull
+    alpha_shape : List[int],
+        boundary walk of the alpha shape
 
     Returns
     -------
     filtered_candidates : Dict[int, List[LabelCandidate]]
         remaining label candidates
     '''
-    if not convex_hull:
+    if not alpha_shape:
         return label_candidates
     
-    hull_coords = np.array([G.nodes[node]['pos'] for node in convex_hull])
+    hull_coords = np.array([G.nodes[node]['pos'] for node in alpha_shape])
     if np.ptp(hull_coords[:, 0]) == 0:
         return label_candidates
     
