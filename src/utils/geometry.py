@@ -1,7 +1,7 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, Dict, List, Tuple
 
-import numpy as np
+import math
 import networkx as nx
 
 from shapely.geometry import LineString, Point, Polygon
@@ -196,3 +196,39 @@ def binding_line_valid(
 
     # valid - no conflict found
     return True
+
+def angle_from_centroid(centroid: Tuple[float, float], point: Tuple[float, float]) -> float:
+    '''
+    Angle of a point from the centroid of the drawing.
+
+    Parameters
+    ----------
+    centroid : Tuple[float, float]
+        centroid of the drawing
+    point : Tuple[float, float]
+        point to get the angle for
+
+    Returns
+    -------
+    angle : float
+        angle from centroid to the point
+    '''
+    return math.atan2(point[1] - centroid[1], point[0] - centroid[0])
+
+def angular_gap_between(a1: float, a2: float) -> float:
+    '''
+    Calculates the counter-clockwise angular gap between two angles.
+
+    Parameters
+    ----------
+    a1 : float
+        starting angle in radians.
+    a2 : float
+        ending angle in radians.
+
+    Returns
+    -------
+    gap : float
+        positive angular distance from a1 to a2 in the range [0, 2π).
+    '''
+    return (a2 - a1) % (2 * math.pi)

@@ -204,7 +204,9 @@ def plot_graph(
         colored_label_candidates: bool = False,
         show_legend: bool = False,
         # overflow candidates
-        overflow_candidates: Dict[int, LabelCandidate] = {}
+        overflow_candidates: Dict[int, LabelCandidate] = {},
+        # grid candidates
+        grid_candidates: Dict[int, List[Tuple[LabelCandidate, float]]] = {}
 ) -> None:
     '''
     Draw the graph and save to a PDF.
@@ -274,8 +276,7 @@ def plot_graph(
     if label_candidates:
         for candidates in label_candidates.values():
             for candidate in candidates:
-                if candidate.text:
-                    _draw_candidate(ax, candidate, colored_label_candidates)
+                _draw_candidate(ax, candidate, colored_label_candidates)
 
         if colored_label_candidates:
             legend_handles = [
@@ -288,6 +289,11 @@ def plot_graph(
     if overflow_candidates:
         for overflow_candidate in overflow_candidates.values():
             _draw_overflow_candidate(G, ax, overflow_candidate, colored_label_candidates)
+
+    if grid_candidates:
+        for candidates in grid_candidates.values():
+            for grid_candidate, _ in candidates:
+                _draw_overflow_candidate(G, ax, grid_candidate, colored_label_candidates)
 
     xs = [G.nodes[nid]['pos'][0] for nid in G.nodes]
     ys = [G.nodes[nid]['pos'][1] for nid in G.nodes]

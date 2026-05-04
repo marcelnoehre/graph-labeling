@@ -12,6 +12,7 @@ from src.label.generate_candidates import *
 from src.filter.filter import *
 from src.label.generate_overflow import *
 from src.overflow.bounded import *
+from src.overflow.unbounded import *
 
 def main():
     cfg = Config()
@@ -165,6 +166,19 @@ def main():
             label_candidates=label_candidates,
             colored_label_candidates=True,
             overflow_candidates=overflow_candidates
+        )
+
+    grid_candidates, overflow_candidates = unbounded_overflow_labels(G, label_candidates, overflow_candidates, alpha_shape, cfg)
+    if cfg.dev:
+        plot_graph(
+            G, 
+            nodes,
+            relations,
+            output_path='figs/unbounded_grid_candidates.pdf',
+            label_candidates=label_candidates,
+            colored_label_candidates=True,
+            overflow_candidates=overflow_candidates,
+            grid_candidates=grid_candidates
         )
 
     plot_graph(
