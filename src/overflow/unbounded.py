@@ -1,3 +1,4 @@
+import time
 import networkx as nx
 
 from typing import Dict, List
@@ -110,7 +111,7 @@ def unbounded_overflow_labels(
         overflow_candidates: Dict[int, LabelCandidate],
         alpha_shape: List[int],
         cfg: Config
-    ) -> Tuple[Dict[int, List[Tuple[LabelCandidate, float]]], Dict[int, LabelCandidate]]:
+    ) -> Tuple[Dict[int, List[Tuple[LabelCandidate, float]]], Dict[int, LabelCandidate], float, float]:
     '''
     Place remaining overflow labels in the graph exterior.
 
@@ -129,8 +130,14 @@ def unbounded_overflow_labels(
 
     Returns
     -------
-    grid_candidates, overflow_candidates : Tuple[Dict[int, List[Tuple[LabelCandidate, float]]], Dict[int, LabelCandidate]]
-        valid grid candidates, updated ovreflow candidates
+    grid_candidates : Dict[int, List[Tuple[LabelCandidate, float]]]
+        valid grid candidates
+    overflow_candidates : Dict[int, LabelCandidate]
+        updated overflow candidates
+    grid_duration : float
+        runtime for building the grid
+    hungarian_duration : float
+        runtime of the hungarian solver
     '''
     alpha_pos = [G.nodes[nid]['pos'] for nid in alpha_shape]
     alpha_N = len(alpha_shape)
@@ -178,10 +185,14 @@ def unbounded_overflow_labels(
         )
         best_gap['assigned'].append(ol.node_id)
 
+    start_time = time.perf_counter()
     grid_candidates = grid_overflow_candidates(G, label_candidates, overflow_candidates, gaps, centroid, alpha_polygon, placed_union, placed_overflow, cfg)
-
+    grid_duration = (time.perf_counter() - start_time) * 1000
+    
+    start_time = time.perf_counter()
     assignment = hungarian_solver(G, sorted(grid_candidates.keys()), grid_candidates, cfg)
     for lid, chosen in assignment.items():
         overflow_candidates[lid] = chosen[0]
+    hungarian_duration = (time.perf_counter() - start_time) * 1000
 
-    return grid_candidates, _adjust_anchors(G, label_candidates, overflow_candidates, unplaced_overflow.keys(), alpha_polygon)
+    return grid_candidates, _adjust_anchors(G, label_candidates, overflow_candidates, unplaced_overflow.keys(), alpha_polygon), grid_duration, hungarian_duration

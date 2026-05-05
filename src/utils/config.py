@@ -4,9 +4,10 @@ from src.models.label_type import LabelType
 @dataclass
 class Config:
     # dev mode
-    dev: bool = True
+    plot: bool = False
+    runtime: bool = True
     # data
-    file: str = 'convex-ordinal'    
+    file: str = 'car'
     label_config = {
         LabelType.GENERAL: True,
         LabelType.EXTENT:  False,
