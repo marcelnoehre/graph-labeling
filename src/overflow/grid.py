@@ -5,6 +5,7 @@ from concurrent.futures import ThreadPoolExecutor
 from typing import Dict, List, Any
 from shapely import unary_union
 from shapely.geometry import Polygon
+from shapely.prepared import prep
 
 from src.utils.config import Config
 from src.models.label_candidate import LabelCandidate
@@ -63,6 +64,8 @@ def _generate_candidates(
     other_node_pos = np.array([data['pos'] for nid, data in G.nodes(data=True) if isinstance(nid, int) and nid != ol.node_id], dtype=float)
     alpha_bounds = alpha_polygon.bounds
     alpha_exterior = alpha_polygon.exterior
+    prepared_alpha = prep(alpha_polygon)
+    prepared_placed_union = prep(placed_union)
 
     # grid
     margin = max(ew, eh) + OUTER_MARGIN
@@ -112,10 +115,10 @@ def _generate_candidates(
         ox_i, oy_i = float(cx_all[i]), float(cy_all[i])
         exp_bbox = bbox_polygon(ox_i, oy_i, ew, eh)
 
-        if overlaps_poly_aabb[i] and alpha_polygon.intersects(exp_bbox):
+        if overlaps_poly_aabb[i] and prepared_alpha.intersects(exp_bbox):
             continue # must be in graph exterior
 
-        if placed_union.intersects(exp_bbox):
+        if prepared_placed_union.intersects(exp_bbox):
             continue # overlaps already placed label
 
         pad_bbox = bbox_polygon(ox_i, oy_i, pw, ph)

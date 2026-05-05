@@ -20,7 +20,7 @@ class Config:
     # grid
     grid_step: float = 0.5
     min_label_dist: float = 1.0
-    max_label_dist: float = 3.0
+    max_label_dist: float = 2.0
     top_k: int = 100
     # weights (cost)
     w_align: float = 1.0                # anchor alignment
