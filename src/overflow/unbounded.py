@@ -66,7 +66,7 @@ def _adjust_anchors(
             align = float(np.dot(unit, va / na)) if na > 0 else -1.0
             scored_anchors.append((align, anchor))
 
-        scored_anchors.sort(reverse=True)
+        scored_anchors.sort(key=lambda x: x[0], reverse=True)
 
         for _, anchor in scored_anchors:
             if ol.anchor.anchor_type == anchor.anchor_type:

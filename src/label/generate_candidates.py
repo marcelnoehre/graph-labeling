@@ -45,7 +45,7 @@ def _compute_label_candidates(
     ink_w_mm, ink_h_mm = measure_ink_mm(label_text)
 
     rows = len(label_text.split(r'\\[-1pt]'))
-    padding = (ink_h_mm / rows - 0.1 * rows) * 0.75
+    padding = (ink_h_mm / rows - 0.1 * rows) * 0.5
 
     # Inner half-extents (ink only, no padding)
     half_iw = (ink_w_mm  * units_per_mm) / 2.0
@@ -102,10 +102,10 @@ def _compute_label_candidates(
         itr = (ink_cx + half_iw, ink_cy + half_ih)
         ibr, itl = (itr[0], ibl[1]), (ibl[0], itr[1])
 
-        exp_l = (padding * units_per_mm) if not is_left else 0
-        exp_r = (padding * units_per_mm) if not is_right else 0
-        exp_t = (padding * units_per_mm) if not is_top else 0
-        exp_b = (padding * units_per_mm) if not is_bottom else 0
+        exp_l = (padding * units_per_mm) if is_right else 0
+        exp_r = (padding * units_per_mm) if is_left else 0
+        exp_t = (padding * units_per_mm) if is_bottom else 0
+        exp_b = (padding * units_per_mm) if is_top else 0
 
         ebl = (pbl[0] - exp_l, pbl[1] - exp_b)
         etr = (ptr[0] + exp_r, ptr[1] + exp_t)

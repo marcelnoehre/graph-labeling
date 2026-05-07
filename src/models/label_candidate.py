@@ -68,7 +68,7 @@ class LabelCandidate:
         is_right  = anchor.anchor_type in [AnchorType.R, AnchorType.TR, AnchorType.BR]
         corner_multiplier = 1 / np.sqrt(2)
         rows = len(self.text.split(r'\\[-1pt]'))
-        padding = ((itl[1] - ibl[1]) / rows - 0.1 * rows) * 0.75
+        padding = ((itl[1] - ibl[1]) / rows - 0.1 * rows) * 0.5
         p_top    = (padding * corner_multiplier) if is_top else padding
         p_bottom = (padding * corner_multiplier) if is_bottom else padding
         p_left   = (padding * corner_multiplier) if is_left else padding

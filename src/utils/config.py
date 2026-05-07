@@ -4,7 +4,7 @@ from src.models.label_type import LabelType
 @dataclass
 class Config:
     # dev mode
-    plot: bool = False
+    plot: bool = True
     runtime: bool = True
     # data
     file: str = 'car'

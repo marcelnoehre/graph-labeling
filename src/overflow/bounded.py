@@ -10,6 +10,7 @@ from src.models.label_type import LabelType
 from src.models.label_candidate import LabelCandidate
 from src.models.anchor import Anchor, AnchorType
 from src.utils.geometry import *
+from src.topology.faces import *
 
 def _eroded_space(space: Polygon, w: float, h: float, below: float, above: float) -> Polygon:
     '''
@@ -123,6 +124,7 @@ def _find_valid_position(
     overflow_candidates: Dict[int, LabelCandidate],
     placed_overflow: List[int],
     space: Polygon,
+    bounded_faces: List[List[int]],
     lid: int
 ) -> Optional[Tuple[float, float, Anchor]]:
     '''
@@ -140,6 +142,8 @@ def _find_valid_position(
         already placed overflow candidates
     space : Polygon
         eroded space
+    bounded_faces: List[List[int]]
+        bounded faces of the planar graph
     lid : int
         label to be placed
 
@@ -259,8 +263,9 @@ def _find_valid_position(
                 anchor.pos[1] - node_pt[1]
             )
         )
+
         for anchor in sorted_anchors:
-            if binding_line_valid(G, lid, anchor, label_candidates, overflow_candidates, placed_overflow, False, 1):
+            if binding_line_valid(G, lid, anchor, label_candidates, overflow_candidates, placed_overflow, node_faces(overflow_candidates[lid].node_id, bounded_faces), False, 1):
                 return cx, cy, anchor
                 
     # no valid position found
@@ -270,8 +275,8 @@ def bounded_overflow_labels(
     G: nx.Graph,
     label_candidates: Dict[int, List[LabelCandidate]],
     overflow_candidates: Dict[int, LabelCandidate],
-    bounded_faces: List[List],
-    centroids: List[Tuple],
+    bounded_faces: List[List[int]],
+    centroids: List[Tuple]
 ) -> Dict[int, LabelCandidate]:
     '''
     Place overflow labels in the graph interior.
@@ -381,7 +386,7 @@ def bounded_overflow_labels(
         ol = overflow_candidates[chosen_label]
         space = space_map[chosen_face]
 
-        fitting_face = _find_valid_position(G, label_candidates, overflow_candidates, placed_overflow, space, chosen_label)
+        fitting_face = _find_valid_position(G, label_candidates, overflow_candidates, placed_overflow, space, bounded_faces, chosen_label)
 
         if fitting_face is None:
             # if no valid position found block the combination of face and label

@@ -276,7 +276,7 @@ def optimize_overflow_labels(
                         new_center, new_anchor = pending_updates[o_lid]
                         tmp_overflow_candidates[o_lid].update_position(*new_center, new_anchor)
 
-                if not binding_line_valid(G, lid, proposed_anchor, label_candidates, tmp_overflow_candidates, overflow_candidates.keys(), True):
+                if not binding_line_valid(G, lid, proposed_anchor, label_candidates, tmp_overflow_candidates, overflow_candidates.keys(), [], True):
                     valid = False # invalid binding line
 
             if valid:

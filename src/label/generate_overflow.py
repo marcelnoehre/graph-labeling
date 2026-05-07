@@ -34,7 +34,7 @@ def _compute_overflow_candidate(G: nx.Graph, initial_candidate: LabelCandidate) 
     corner_multiplier = 1 / np.sqrt(2)
     s = (1.0 / corner_multiplier)
     rows = len(initial_candidate.text.split(r'\\[-1pt]'))
-    padding = (ink_h / rows - 0.1 * rows) * 0.75
+    padding = (ink_h / rows - 0.1 * rows) * 0.5
 
     half_iw = ink_w / 2.0
     half_ih = ink_h / 2.0

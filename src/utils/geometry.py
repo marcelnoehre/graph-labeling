@@ -111,6 +111,7 @@ def binding_line_valid(
     label_candidates: Dict[int, List[LabelCandidate]],
     overflow_candidates: Dict[int, LabelCandidate],
     placed_overflow: List[int],
+    edges: List[Tuple[int, int]] = [],
     soft: bool = False,
     max_edge_crossings: int = -1
 ) -> bool:
@@ -131,6 +132,8 @@ def binding_line_valid(
         overflow candidates to be placed
     placed_overflow : List[Dict[int, Tuple[float, float], LineString]]
         already placed overflow candidates
+    edges : List[Tuple[int, int]] = []
+        forbidden edges of the graph
     soft : bool = False
         soft mode is less restrictive
     max_edge_crossings : int = -1
@@ -152,7 +155,7 @@ def binding_line_valid(
         w, h = label_wh(overflow_candidates[o_lid].exp_bbox_corners)
 
         # binder intersects already placed overflow label
-        if binding_line.intersects(bbox_polygon(o_cx, o_cy, w, h)):
+        if binding_line.intersects(bbox_polygon(*o_ol.center, w, h)):
             return False
         
         # binder conflicts with another binder
@@ -183,6 +186,12 @@ def binding_line_valid(
         # binder intersects with another node
         if binding_line.distance(Point(data['pos'])) < NODE_RADIUS:
             return False
+    
+    for a, b in edges:
+        # binder to close to an forbidden
+        if Point(anchor.pos).distance(LineString([G.nodes[a]['pos'], G.nodes[b]['pos']])) < NODE_RADIUS:
+            return False
+
         
     if max_edge_crossings >= 0:
         # restrict the number of edge crossings 

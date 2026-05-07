@@ -147,7 +147,7 @@ def _generate_candidates(
             if ink.intersects(line):
                 continue # intersects own ink
 
-            if not binding_line_valid(G, lid, anchors[anchor_i], label_candidates, overflow_candidates, placed_overflow, True):
+            if not binding_line_valid(G, lid, anchors[anchor_i], label_candidates, overflow_candidates, placed_overflow, [], True):
                 continue # invalid binding line
 
             chosen_anchor = anchors[anchor_i]

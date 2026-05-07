@@ -135,10 +135,13 @@ def filter_candidates_by_edges(
     '''
     filtered_candidates: Dict[int, List[LabelCandidate]] = {}
 
-    for node, candidates in label_candidates.items():
+    for lid, candidates in label_candidates.items():
+        if not candidates:
+            continue
+        nid = candidates[0].node_id
         edges = [
             LineString([G.nodes[u]['pos'], G.nodes[v]['pos']])
-            for u, v in node_faces(node, bounded_faces)
+            for u, v in node_faces(nid, bounded_faces)
         ]
 
         surviving = []
@@ -149,7 +152,7 @@ def filter_candidates_by_edges(
             if not any(pad_shape.intersects(e) for e in edges):
                 surviving.append(candidate)
 
-        filtered_candidates[node] = surviving
+        filtered_candidates[lid] = surviving
 
     return filtered_candidates
 
