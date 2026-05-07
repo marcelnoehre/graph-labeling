@@ -86,7 +86,7 @@ def _adjust_anchors(
             tmp_exp_poly = Polygon(tmp_ol.exp_bbox_corners)
 
             if tmp_exp_poly.intersects(alpha_polygon):
-                return False # overlaps graph
+                continue # overlaps graph
 
             if any(tmp_exp_poly.intersects(Polygon(l[0].pad_bbox_corners)) for l in label_candidates.values() if l):
                 continue # overlaps with existing label
