@@ -141,7 +141,7 @@ def filter_candidates_by_edges(
         nid = candidates[0].node_id
         edges = [
             LineString([G.nodes[u]['pos'], G.nodes[v]['pos']])
-            for u, v in node_faces(nid, bounded_faces)
+            for u, v in node_faces(G, nid, bounded_faces)
         ]
 
         surviving = []

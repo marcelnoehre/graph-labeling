@@ -192,7 +192,7 @@ def main():
         )
 
     start_time = time.perf_counter()
-    overflow_candidates = bounded_overflow_labels(G, label_candidates, overflow_candidates, bounded_faces, centroids)
+    overflow_candidates = bounded_overflow_labels(G, label_candidates, overflow_candidates, bounded_faces, centroids, alpha_shape)
     bounded_overflow_duration = (time.perf_counter() - start_time) * 1000
     if cfg.runtime:
         print(f"\033[1;36m[RUNTIME]\033[0m Bounded overflow runtime: \033[1;32m{bounded_overflow_duration:.2f} ms\033[0m")

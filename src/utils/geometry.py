@@ -28,10 +28,11 @@ def pad_overlap(a: LabelCandidate, b: LabelCandidate) -> bool:
     conflict : bool
         wether the ink boxes overlap
     '''
+    buffer = 0.05
     (ax0, ay0), _, (ax1, ay1), _ = a.pad_bbox_corners
     (bx0, by0), _, (bx1, by1), _ = b.pad_bbox_corners
     
-    return ax0 < bx1 and ax1 > bx0 and ay0 < by1 and ay1 > by0
+    return (ax0 + buffer < bx1 and ax1 - buffer > bx0 and ay0 + buffer < by1 and ay1 - buffer > by0)
 
 def bbox_corners(cx, cy, hx, hy):
     '''

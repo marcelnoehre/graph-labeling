@@ -350,7 +350,7 @@ def _find_valid_position(
         )
 
         for anchor in sorted_anchors:
-            if binding_line_valid(G, lid, anchor, label_candidates, overflow_candidates, placed_overflow, node_faces(overflow_candidates[lid].node_id, bounded_faces), False, 1):
+            if binding_line_valid(G, lid, anchor, label_candidates, overflow_candidates, placed_overflow, node_faces(G, overflow_candidates[lid].node_id, bounded_faces), False, 1):
                 return cx, cy, anchor
                 
     # no valid position found
@@ -361,7 +361,8 @@ def bounded_overflow_labels(
     label_candidates: Dict[int, List[LabelCandidate]],
     overflow_candidates: Dict[int, LabelCandidate],
     bounded_faces: List[List[int]],
-    centroids: List[Tuple]
+    centroids: List[Tuple],
+    alpha_shape: List[int]
 ) -> Dict[int, LabelCandidate]:
     '''
     Place overflow labels in the graph interior.
@@ -378,6 +379,8 @@ def bounded_overflow_labels(
         bounded faces of the planar graph 
     centroids : List[Tuple]
         centroid of each bounded face
+    alpha_shape : List[int]
+        boundary walk of the alpha shape
 
     Returns
     -------
@@ -418,6 +421,8 @@ def bounded_overflow_labels(
     for lid, face_ids in fitting_faces.items():
         for fid in face_ids:
             face_to_labels.setdefault(fid, []).append(lid)
+
+    alpha_boundary = Polygon([G.nodes[n]['pos'] for n in alpha_shape]).boundary
 
     while True:
         face_order = sorted(
@@ -471,9 +476,21 @@ def bounded_overflow_labels(
         ol = overflow_candidates[chosen_label]
         space = space_map[chosen_face]
 
+        dist_to_boundary = alpha_boundary.distance(Point(G.nodes[ol.node_id]['pos']))
+        dist_to_face = np.linalg.norm(
+            np.array(G.nodes[ol.node_id]['pos']) - np.array(centroids[chosen_face])
+        )
+        if dist_to_boundary < dist_to_face:
+            fitting_faces[chosen_label] = [f for f in fitting_faces[chosen_label] if f != chosen_face]
+            face_to_labels[chosen_face] = [
+                lid for lid in face_to_labels[chosen_face] if lid != chosen_label
+            ]
+            continue
+
         fitting_face = _find_valid_position(G, label_candidates, overflow_candidates, placed_overflow, space, bounded_faces, chosen_label)
 
-        if fitting_face is None:
+        if fitting_face is None or np.hypot(fitting_face[2].pos[0] - G.nodes[ol.node_id]['pos'][0],
+                fitting_face[2].pos[1] - G.nodes[ol.node_id]['pos'][1]) > dist_to_boundary:
             # if no valid position found block the combination of face and label
             fitting_faces[chosen_label] = [f for f in fitting_faces[chosen_label] if f != chosen_face]
             face_to_labels[chosen_face] = [

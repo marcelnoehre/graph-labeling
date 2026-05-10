@@ -115,6 +115,7 @@ def extract_faces(G: nx.Graph, scale: float) -> Tuple[List[int], List[List[int]]
     return alpha_shape, bounded_faces, areas, centroids
 
 def node_faces(
+        G: nx.Graph,
         node: int,
         bounded_faces: List[List[int]]
 ) -> List[Tuple[int, int]]:
@@ -123,6 +124,8 @@ def node_faces(
 
     Parameters
     ----------
+    G : nx.Graph
+        graph containing the positions
     node : int
         node for which to find assigned faces
     bounded_faces: List[List[int]]
@@ -133,8 +136,8 @@ def node_faces(
     face_edges : List
         a list of (u, v) tuples.
     '''
-    seen: Set[frozenset] = set()
-    edges = []
+    edges = list(G.edges(node))
+    seen: Set[frozenset] = set(frozenset(e) for e in edges)
     for face in bounded_faces:
         if node not in face:
             continue
