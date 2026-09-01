@@ -1,12 +1,10 @@
 import copy
 import time
 
-from data.parser import Parser
-from fca.lattice import Lattice
-
 from src.utils.config import Config
 from src.utils.visualize import plot_graph
 from src.utils.normalize import *
+from src.utils.graph_lattice import GraphLattice
 from src.topology.planarize import *
 from src.topology.faces import *
 from src.label.generate_candidates import *
@@ -19,18 +17,11 @@ from src.forces.forces import *
 def main():
     init_time = time.perf_counter()
     cfg = Config()
-    parser = Parser()
-    
-    cxt = parser.decode_cxt(f'data/{cfg.file}.cxt')
-    with open(f'data/{cfg.file}.pos', 'r') as f:
-        positions = {
-            c: tuple(map(float, line.split()[:2]))
-            for c, line in enumerate(f) if line.strip()
-        }
 
-    lattice = Lattice(cxt)
+    lattice = GraphLattice(f'data/{cfg.file}.graphml')
     nodes = lattice.nodes
     relations = list(lattice.cover_relations())
+    positions = lattice.positions
 
     # planarize graph
     start_time = time.perf_counter()
@@ -149,7 +140,7 @@ def main():
     
     # filter by neighbor direction
     start_time = time.perf_counter()
-    label_candidates = filter_candidates_by_neighbor_direction(G, label_candidates, lattice.lattice)
+    label_candidates = filter_candidates_by_neighbor_direction(G, label_candidates, lattice)
     filter_neighbor_duration = (time.perf_counter() - start_time) * 1000
     if cfg.runtime:
         print(f"\033[1;36m[RUNTIME]\033[0m Filter neighbor runtime: \033[1;32m{filter_neighbor_duration:.2f} ms\033[0m")

@@ -2,10 +2,10 @@ import numpy as np
 import networkx as nx
 
 from typing import List, Dict
-from fca import Lattice
 
 from src.utils.config import Config
 from src.utils.constants import *
+from src.utils.graph_lattice import GraphLattice
 from src.models.anchor import AnchorType, Anchor
 from src.models.label_type import LabelType
 from src.models.label_candidate import LabelCandidate
@@ -124,7 +124,7 @@ def _compute_label_candidates(
 
     return lid_candidates
 
-def generate_label_candidates(G: nx.Graph, lattice: Lattice, cfg: Config) -> Dict[int, List[LabelCandidate]]:
+def generate_label_candidates(G: nx.Graph, lattice: GraphLattice, cfg: Config) -> Dict[int, List[LabelCandidate]]:
     '''
     Generate all label candidates.
 
@@ -132,8 +132,8 @@ def generate_label_candidates(G: nx.Graph, lattice: Lattice, cfg: Config) -> Dic
     ----------
     G : nx.Graph
         graph containing the positions
-    lattice : Lattice
-        lattice functionalities for FCA version
+    lattice : GraphLattice
+        lattice structure and labels loaded from graphml
     cfg : Config
         configuration
 
@@ -147,13 +147,14 @@ def generate_label_candidates(G: nx.Graph, lattice: Lattice, cfg: Config) -> Dic
 
     if cfg.label_config[LabelType.GENERAL]:
         for nid in lattice.nodes:
-            general_txt = format_label_text(cfg, f'Node {nid}', LabelType.GENERAL)
-            label_candidates[lid] = _compute_label_candidates(G, nid, general_txt, LabelType.GENERAL)
-            lid += 1
+            general_txt = format_label_text(cfg, lattice.general(nid), LabelType.GENERAL)
+            if general_txt:
+                label_candidates[lid] = _compute_label_candidates(G, nid, general_txt, LabelType.GENERAL)
+                lid += 1
 
     if cfg.label_config[LabelType.EXTENT]:
         for nid in lattice.nodes:
-            objects = sorted(str(g) for g in lattice.lattice.get_concept_new_extent(nid))
+            objects = sorted(str(g) for g in lattice.extent(nid))
             extent_txt = format_label_text(cfg, ', '.join(objects), LabelType.EXTENT)
             if extent_txt:
                 label_candidates[lid] = _compute_label_candidates(G, nid, extent_txt, LabelType.EXTENT)
@@ -161,7 +162,7 @@ def generate_label_candidates(G: nx.Graph, lattice: Lattice, cfg: Config) -> Dic
 
     if cfg.label_config[LabelType.INTENT]:
         for nid in lattice.nodes:
-            attributes = sorted(str(m) for m in lattice.lattice.get_concept_new_intent(nid))
+            attributes = sorted(str(m) for m in lattice.intent(nid))
             intent_txt = format_label_text(cfg, ', '.join(attributes), LabelType.INTENT)
             if intent_txt:
                 label_candidates[lid] = _compute_label_candidates(G, nid, intent_txt, LabelType.INTENT)

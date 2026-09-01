@@ -16,7 +16,9 @@ uv run python main.py
 ```
 
 The script will label the file stated in the `utils/config.py` file. The file name has to match
-one of the `.cxt` files and one of the `.pos` files in the `/data` directory.
+one of the `.graphml` files in the `/data` directory. Each node needs `x`/`y` position data, and
+optionally `extent`/`intent` label data (`;`-separated names), which can be embedded with
+`scripts/label_graphml.py`.
 
 ## Configuration
 | Category | Parameter | Description |

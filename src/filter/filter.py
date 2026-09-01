@@ -4,8 +4,8 @@ import networkx as nx
 
 from shapely import Polygon, Point, LineString, box
 from typing import Dict, List
-from fcapy.lattice import ConceptLattice
 
+from src.utils.graph_lattice import GraphLattice
 from src.models.anchor import AnchorType
 from src.models.label_candidate import LabelCandidate
 from src.topology.faces import node_faces
@@ -159,7 +159,7 @@ def filter_candidates_by_edges(
 def filter_candidates_by_neighbor_direction(
         G: nx.Graph,
         label_candidates: Dict[int, List[LabelCandidate]],
-        lattice: ConceptLattice
+        lattice: GraphLattice
 ) -> Dict[int, List[LabelCandidate]]:
     '''
     Filter candidates based on their direct neighbors.
@@ -170,8 +170,8 @@ def filter_candidates_by_neighbor_direction(
         graph containing the positions
     label_candidates : Dict[int, List[LabelCandidate]]
         active label candidates
-    lattice : ConceptLattice
-        lattice opject containing neighbors 
+    lattice : GraphLattice
+        lattice structure containing neighbors
 
     Returns
     -------

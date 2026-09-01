@@ -7,11 +7,11 @@ class Config:
     plot: bool = False
     runtime: bool = True
     # data
-    file: str = 'car'
+    file: str = 'forum_romanum'
     label_config = {
         LabelType.GENERAL: True,
-        LabelType.EXTENT:  False,
-        LabelType.INTENT:  False
+        LabelType.EXTENT:  True,
+        LabelType.INTENT:  True
     }
     # visualization
     font_size: str = r'\footnotesize'
