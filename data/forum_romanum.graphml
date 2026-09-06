@@ -42,6 +42,7 @@
       <data key="x">-2</data>
       <data key="y">8</data>
       <data key="intent">$M:\!^{**}$</data>
+      <data key="extent">Temple of Vespasian</data>
     </node>
     <node id="7">
       <data key="x">0</data>
@@ -60,6 +61,7 @@
     <node id="10">
       <data key="x">0</data>
       <data key="y">6</data>
+      <data key="extent">Column of Phocas</data>
     </node>
     <node id="11">
       <data key="x">-2</data>
@@ -98,6 +100,7 @@
     <node id="18">
       <data key="x">0.0</data>
       <data key="y">0.0</data>
+      <data key="extent">Temple of Castor and Pollux</data>
     </node>
     <edge source="0" target="1" />
     <edge source="0" target="2" />

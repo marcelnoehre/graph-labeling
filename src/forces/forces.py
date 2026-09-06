@@ -57,6 +57,7 @@ def optimize_overflow_labels(
         for candidates in label_candidates.values()
         for candidate in candidates
     ]
+    placed_ink_union = unary_union(ink_polys + [alpha_polygon])
     alpha_nodes = [
         Point(G.nodes[nid]['pos']).buffer(0.15)
         for nid in alpha_shape    
@@ -195,11 +196,12 @@ def optimize_overflow_labels(
                     infringement = (node_pos[1] - min_y) if ol.label_type == LabelType.INTENT else (max_y - node_pos[1])
                     force_vector += slide_dir * (infringement + 0.1) * cfg.w_half_plane
 
-            # displacement
+            cooling = 1.0 - (i / cfg.force_iterations)
+            step_size = cfg.force_step_size * cooling
             force_mag = np.linalg.norm(force_vector)
-            delta = force_vector * cfg.force_step_size
+            delta = force_vector * step_size
             if force_mag > 1.0:
-                delta = (force_vector / force_mag) * cfg.force_step_size
+                delta = (force_vector / force_mag) * step_size
 
             proposed_center = current_center + delta
 
@@ -225,7 +227,7 @@ def optimize_overflow_labels(
                     valid = False # keep labels outside
 
             if valid:
-                if proposed_poly.intersects(placed_union):
+                if proposed_poly.intersects(placed_ink_union):
                     valid = False # poly overlaps drawing
 
             if valid:
@@ -234,8 +236,8 @@ def optimize_overflow_labels(
                         valid = False # binder overlaps label candidates
                         
             if valid:
-                if Point(proposed_anchor.pos).intersects(placed_union):
-                    valid = False # anchor overlaps drawing 
+                if Point(proposed_anchor.pos).intersects(placed_ink_union):
+                    valid = False
         
             if valid:
                 for o_lid in unbounded_overflow_labels:
